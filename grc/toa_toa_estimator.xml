@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<block>
+  <name>TOA Estimator PUB</name>
+  <key>toa_toa_estimator_pub</key>
+  <category>[toa]</category>
+  <import>import toa</import>
+  <make>toa.toa_estimator_pub($fft_size, $sample_rate, $threshold, $debug_output_tag_id, $sequence_list_path, $zmq_address)</make>
+  <param>
+    <name>FFT Size</name>
+    <key>fft_size</key>
+    <type>int</type>
+  </param>
+  <param>
+    <name>Sample Rate</name>
+    <key>sample_rate</key>
+    <type>float</type>
+  </param>
+  <param>
+    <name>Detection Threshold</name>
+    <key>threshold</key>
+    <type>float</type>
+  </param>
+  <param>
+    <name>Debug Output Tag ID</name>
+    <key>debug_output_tag_id</key>
+    <type>int</type>
+  </param>
+  <param>
+    <name>Sequence List File Path</name>
+    <key>sequence_list_path</key>
+    <type>file_open</type>
+  </param>
+  <param>
+    <name>ZMQ Publisher Address</name>
+    <key>zmq_address</key>
+    <type>string</type>
+  </param>
+  <sink>
+    <name>in</name>
+    <type>float</type>
+  </sink>
+  <source>
+    <name>out</name>
+    <type>float</type>
+    <optional>true</optional>
+  </source>
+</block>
