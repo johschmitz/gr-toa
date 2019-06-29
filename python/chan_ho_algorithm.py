@@ -5,8 +5,6 @@ def chan_3rx(pos_rx, d):
     r31 = d[1]
 
     # Set receivers position
-    print("------------------")
-    print(pos_rx)
     x1 = pos_rx[0][0]
     y1 = pos_rx[0][1]
     x2 = pos_rx[1][0]
@@ -76,7 +74,6 @@ def chan_3rx(pos_rx, d):
 def chan_tdoa(pos, d, Q):
     pos = np.array(pos)
     d = np.array(d)
-    print(pos)
     M,D = pos.shape # number of receiver stations M and dimensions D
     K = np.zeros((M,1))
 

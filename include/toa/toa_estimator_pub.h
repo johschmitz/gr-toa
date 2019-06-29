@@ -47,8 +47,11 @@ namespace gr {
              * class. toa::toa_estimator_pub::make is the public interface for
              * creating new instances.
              */
-            static sptr make(unsigned int fft_size, float sample_rate,
-                             float threshold, int debug_output_tag_id,
+            static sptr make(int fft_size, float sample_rate,
+                             float acquisition_interval,
+                             float detection_threshold,
+                             int max_tracking_fails,
+                             int debug_output_tag_id,
                              std::string sequence_list_path,
                              std::string zmq_address);
         };

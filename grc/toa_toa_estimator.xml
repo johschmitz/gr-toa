@@ -4,7 +4,7 @@
   <key>toa_toa_estimator_pub</key>
   <category>[toa]</category>
   <import>import toa</import>
-  <make>toa.toa_estimator_pub($fft_size, $sample_rate, $threshold, $debug_output_tag_id, $sequence_list_path, $zmq_address)</make>
+  <make>toa.toa_estimator_pub($fft_size, $sample_rate, $acquisition_interval, $threshold, $max_tracking_fails, $debug_output_tag_id, $sequence_list_path, $zmq_address)</make>
   <param>
     <name>FFT Size</name>
     <key>fft_size</key>
@@ -16,9 +16,19 @@
     <type>float</type>
   </param>
   <param>
+    <name>Acquisition Interval [s]</name>
+    <key>acquisition_interval</key>
+    <type>float</type>
+  </param>
+  <param>
     <name>Detection Threshold</name>
     <key>threshold</key>
     <type>float</type>
+  </param>
+  <param>
+    <name>Max Tracking Fails</name>
+    <key>max_tracking_fails</key>
+    <type>int</type>
   </param>
   <param>
     <name>Debug Output Tag ID</name>

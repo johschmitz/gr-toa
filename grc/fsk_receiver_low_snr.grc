@@ -259,7 +259,7 @@
     </param>
     <param>
       <key>value</key>
-      <value>-15</value>
+      <value>-20</value>
     </param>
     <param>
       <key>_enabled</key>
@@ -3905,6 +3905,10 @@
   <block>
     <key>toa_toa_estimator_pub</key>
     <param>
+      <key>acquisition_interval</key>
+      <value>1</value>
+    </param>
+    <param>
       <key>alias</key>
       <value></value>
     </param>
@@ -3918,7 +3922,7 @@
     </param>
     <param>
       <key>debug_output_tag_id</key>
-      <value>1</value>
+      <value>0</value>
     </param>
     <param>
       <key>threshold</key>

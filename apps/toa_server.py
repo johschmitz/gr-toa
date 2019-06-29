@@ -239,11 +239,11 @@ class toa_server():
         for tag_id in self.tag_ids:
             if self.beacon_id != tag_id:
                 if 2 <= len(self.toads[tag_id]):
-                    d = list()
+                    DDOAs = list()
                     for toad_idx in self.toads[tag_id]:
-                        d.append(self.toads[tag_id][toad_idx] * self.const_c)
-                    print("d",d)
-                    chan_result = chan_ho_algorithm.locate(list(self.pos_rx.values()), d)
+                        DDOAs.append(self.toads[tag_id][toad_idx] * self.const_c)
+                    print("DDOAs",DDOAs)
+                    chan_result = chan_ho_algorithm.locate(list(self.pos_rx.values()), DDOAs)
                     self.pos_tags[tag_id] = chan_result
 
 

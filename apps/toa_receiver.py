@@ -34,6 +34,10 @@ class top_block(gr.top_block):
         self.gain = cfg["receiver"]["gain"]
         self.if_gain = cfg["receiver"]["if_gain"]
         self.bb_gain = cfg["receiver"]["bb_gain"]
+        self.acquisition_interval = cfg["receiver"]["acquisition_interval"]
+        self.detection_threshold = cfg["receiver"]["detection_threshold"]
+        self.max_tracking_fails = cfg["receiver"]["max_tracking_fails"]
+        self.sequence_list_file = cfg["receiver"]["sequence_list_file"]
 
         self.zmq_publisher_addr = zmq_publisher_addr = "tcp://*:" + str(6000+args.id)
 
@@ -41,7 +45,9 @@ class top_block(gr.top_block):
         # Blocks
         ##################################################
         self.toa_toa_estimator_pub = toa.toa_estimator_pub(self.fft_size, \
-            self.sample_rate/self.bandpass_decim_rate, 0.2, 1, './reference_files/sequence_list.txt', self.zmq_publisher_addr)
+            self.sample_rate/self.bandpass_decim_rate, self.acquisition_interval, \
+            self.detection_threshold, self.max_tracking_fails, \
+            -1, self.sequence_list_file, self.zmq_publisher_addr)
         self.osmosdr_source = osmosdr.source(args=args.device_args)
         self.osmosdr_source.set_sample_rate(self.sample_rate)
         self.osmosdr_source.set_center_freq(self.f_carrier, 0)
