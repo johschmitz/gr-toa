@@ -37,6 +37,7 @@ class toa_server():
         self.record_to_database = cfg["server"]["record_to_database"]
         self.database = cfg["server"]["database"]
         self.toa_buffer_len = cfg["server"]["toa_buffer_len"]
+        self.association_time = cfg["server"]["association_time"]
 
         # Initialize clock correction algorithm
         self.beta = dict()
@@ -127,21 +128,23 @@ class toa_server():
 
     def rx_callback(self, rx_id, msg_data):
         # Get UTC timestamp
-        timestamp = int(datetime.datetime.utcnow().strftime("%s"))
+        timestamp_server = int(datetime.datetime.utcnow().strftime("%s"))
         # Deserialize data
         # tag id | TOA nanoseconds | corrleation peak value | databit
         tag_id = np.frombuffer(msg_data[0:2], dtype=np.uint16)[0].item()
-        toa_ns = np.frombuffer(msg_data[2:10], dtype=np.float64)[0].item()
-        correlation = np.frombuffer(msg_data[10:14], dtype=np.float32)[0].item()
-        databit = np.frombuffer(msg_data[14:15], dtype=np.uint8)[0].item()
-#        print("Received [timestamp, rx_id, tag_id, TOA nanoseconds, correlation, databit]:", \
-#            timestamp, rx_id ,tag_id, toa_ns, correlation, databit)
+        # Rx timestamp is in ms
+        timestamp_receiver = np.frombuffer(msg_data[2:10], dtype=np.float64)[0].item()
+        toa_ns = np.frombuffer(msg_data[10:18], dtype=np.float64)[0].item()
+        correlation = np.frombuffer(msg_data[18:22], dtype=np.float32)[0].item()
+        databit = np.frombuffer(msg_data[22:23], dtype=np.uint8)[0].item()
+#        print("Received [timestamp_server, rx_id, tag_id, timestamp_receiver, TOA nanoseconds, correlation, databit]:", \
+#            timestamp_server, rx_id ,tag_id, timestamp_receiver, toa_ns, correlation, databit)
         if args.record_to_database:
             # Insert into database
             self.db_cursor.execute("insert into TOAs values(?,?,?,?,?,?)", \
-                (timestamp, rx_id, tag_id, toa_ns, correlation, databit))
+                (timestamp_server, rx_id, tag_id, timestamp_receiver, toa_ns, correlation, databit))
         
-        self.update_toa_buffer(tag_id, rx_id, (timestamp, toa_ns, abs(correlation), databit))
+        self.update_toa_buffer(tag_id, rx_id, (timestamp_receiver, toa_ns, abs(correlation), databit))
 
     def update_toa_buffer(self, tag_id, rx_id, toa):
         self.mutex.acquire()
@@ -187,11 +190,13 @@ class toa_server():
                 if 2 <= len(self.toa_buffer[tag_id][rx_id]):
                     # Check if the latest or the second latest buffer elements match
                     # At most an offset of 1 s is permissible in timestamps
-                    if 1 >= abs(max_timestamp - self.toa_buffer[tag_id][rx_id][previous][idx_timestamp]) \
+                    if self.association_time >= abs(max_timestamp \
+                        - self.toa_buffer[tag_id][rx_id][previous][idx_timestamp]) \
                         and association_databit == self.toa_buffer[tag_id][rx_id][previous][idx_databit]:
                             self.toas[tag_id][rx_id] = self.toa_buffer[tag_id][rx_id][previous][idx_toa]
                     else:
-                        if 1 >= abs(max_timestamp - self.toa_buffer[tag_id][rx_id][latest][idx_timestamp]) \
+                        if self.association_time >= abs(max_timestamp \
+                            - self.toa_buffer[tag_id][rx_id][latest][idx_timestamp]) \
                             and association_databit == self.toa_buffer[tag_id][rx_id][latest][idx_databit]:
                                 self.toas[tag_id][rx_id] = self.toa_buffer[tag_id][rx_id][latest][idx_toa]
 

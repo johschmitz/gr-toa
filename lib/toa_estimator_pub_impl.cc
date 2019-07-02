@@ -31,6 +31,7 @@
 #include <iterator>
 #include <algorithm>
 #include <cmath>
+#include <chrono>
 
 #include "toa_estimator_pub_impl.h"
 
@@ -240,8 +241,9 @@ namespace gr {
             // Check if detection peak is above threshold
             if (d_detection_threshold < std::abs(ifft_out[xcorr_peak_idx])) {
 
-                std::cout << "-------------------------------------------" << "\n"
-                          << " tag->id " << tag->id << "\n";
+                // Timestamp
+                double timestamp = (double)(std::chrono::duration_cast<std::chrono::milliseconds>(
+                        std::chrono::system_clock::now().time_since_epoch()).count())/1000;
 
                 // Index of peak inside current window
                 int xcorr_peak_idx_in_window = xcorr_peak_idx - d_overlap;
@@ -254,7 +256,8 @@ namespace gr {
 
                 // Interpolate to find fractional part
                 double max_fractional;
-                max_fractional = parabolic_interpolation(ifft_out[xcorr_peak_idx-1], ifft_out[xcorr_peak_idx], ifft_out[xcorr_peak_idx+1]);
+                max_fractional = parabolic_interpolation(ifft_out[xcorr_peak_idx-1],
+                    ifft_out[xcorr_peak_idx], ifft_out[xcorr_peak_idx+1]);
                 // Make sure the interpolation result is between -1 and 1
                 if (max_fractional < -1 || max_fractional > 1) {
                     max_fractional = 0;
@@ -267,7 +270,12 @@ namespace gr {
                 double burst_toa = ( burst_start_idx + max_fractional ) / d_sample_rate;
 
                 // Debug output
-                std::cout << " databit " << (int)databit << "\n"
+                std::cout.setf(std::ios_base::fixed, std::ios_base::floatfield);
+                std::cout.precision(3);
+                std::cout << "-------------------------------------------" << "\n"
+                          << " tag->id " << tag->id << "\n"
+                          << " timestamp " << timestamp << "\n"
+                          << " databit " << (int)databit << "\n"
                           << " ifft_out[xcorr_peak_idx-1] " << ifft_out[xcorr_peak_idx-1] << "\n"
                           << " ifft_out[xcorr_peak_idx] " << ifft_out[xcorr_peak_idx] << "\n"
                           << " ifft_out[xcorr_peak_idx+1] " << ifft_out[xcorr_peak_idx+1] << "\n"
@@ -306,17 +314,21 @@ namespace gr {
                 // tag id | TOA integer | corrleation peak value | databit
                 const size_t msg_len = sizeof(uint16_t) 
                     + sizeof(double)
+                    + sizeof(double)
                     + sizeof(float)
                     + sizeof(uint8_t);
                 zmq::message_t msg(msg_len);
+
                 // Serialize data into ZMQ message
                 std::memcpy((char*)msg.data(),
                     &(tag->id), sizeof(uint16_t));
                 std::memcpy((char*)msg.data()+sizeof(uint16_t),
-                    &burst_toa, sizeof(double));
+                    &timestamp, sizeof(double));
                 std::memcpy((char*)msg.data()+sizeof(uint16_t)+sizeof(double),
+                    &burst_toa, sizeof(double));
+                std::memcpy((char*)msg.data()+sizeof(uint16_t)+sizeof(double)+sizeof(double),
                     &ifft_out[xcorr_peak_idx], sizeof(float));
-                std::memcpy((char*)msg.data()+sizeof(uint16_t)+sizeof(double)+sizeof(float),
+                std::memcpy((char*)msg.data()+sizeof(uint16_t)+sizeof(double)+sizeof(double)+sizeof(float),
                     &databit, sizeof(uint8_t));
                 // Send ZMQ message
                 d_socket->send(msg);
