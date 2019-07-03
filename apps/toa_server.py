@@ -175,7 +175,7 @@ class toa_server():
             # Make sure to clear old results since number of available TOAs can change
             self.toas_old[tag_id] = copy.deepcopy(self.toas[tag_id])
             self.toas[tag_id].clear()
-            # First find latest timestamp
+            # First find latest timestamp among all sensors for this tag
             max_timestamp = 0
             association_databit = 0
             for rx_id in self.geo_coordinates_rx:
@@ -208,37 +208,36 @@ class toa_server():
         # Saeed Shojaee, Johannes Schmitz, Sivan Toledo, Rudolf Mathar:
         #   On the Accuracy of Passive Hyperbolic Localization in the Presence of Clock Drift
         # (time index of deque inverted compared to paper)
-        if self.reference_rx_id in self.toas_old[self.beacon_id]:
+        for rx_id in self.geo_coordinates_rx:
+            if rx_id in self.toas[self.beacon_id] \
+                and rx_id in self.toas_old[self.beacon_id] \
+                and self.reference_rx_id in self.toas[self.beacon_id] \
+                and self.reference_rx_id in self.toas_old[self.beacon_id]:
+                if self.reference_rx_id != rx_id:
+                    # Equation (13)
+                    beta_new = ( self.toas[self.beacon_id][rx_id] \
+                        - self.toas_old[self.beacon_id][rx_id] ) \
+                        / ( self.toas[self.beacon_id][self.reference_rx_id] \
+                        - self.toas_old[self.beacon_id][self.reference_rx_id] )
+                    if 0.0001 > abs(1.0 - beta_new):
+                        self.beta[rx_id] = beta_new
+        # Only update offsets phi whenever all sensors saw the beacon transmission
+        if len(self.geo_coordinates_rx) == len(self.toas[self.beacon_id]):
             for rx_id in self.geo_coordinates_rx:
-                if rx_id in self.toas[self.beacon_id] \
-                    and rx_id in self.toas_old[self.beacon_id] \
-                    and self.reference_rx_id in self.toas[self.beacon_id]:
-                    if self.reference_rx_id != rx_id:
-                        # Equation (13)
-                        beta_new = ( self.toas[self.beacon_id][rx_id] \
-                            - self.toas_old[self.beacon_id][rx_id] ) \
-                            / ( self.toas[self.beacon_id][self.reference_rx_id] \
-                            - self.toas_old[self.beacon_id][self.reference_rx_id] )
-                        if 0.0001 > abs(1.0 - beta_new):
-                            self.beta[rx_id] = beta_new
-            
-                if rx_id in self.toas[self.beacon_id]:
-                    # Equation (14)
-                    self.phi[rx_id] = self.toas[self.beacon_id][rx_id] \
-                        - self.beta[rx_id] * self.tofs_sensors_beacon[rx_id]
-            print("beta", self.beta)
-            print("phi", self.phi)
-            for tag_id in self.tag_ids:
-                for rx_id in self.geo_coordinates_rx:
-                    if self.reference_rx_id != rx_id and self.beacon_id != tag_id:
-                        if self.reference_rx_id in self.toas[tag_id] and rx_id in self.toas[tag_id]:
-                            # Equation (15)
-                            # self.toads[tag_id][rx_id] = self.toas[tag_id][rx_id] \
-                            #     - self.toas[tag_id][self.reference_rx_id]
-                            self.toads[tag_id][rx_id] = ( self.toas[tag_id][rx_id] \
-                                - self.phi[rx_id] ) / self.beta[rx_id] \
-                                - ( self.toas[tag_id][self.reference_rx_id] \
-                                - self.phi[self.reference_rx_id] )
+                # Equation (14)
+                self.phi[rx_id] = self.toas[self.beacon_id][rx_id] \
+                    - self.beta[rx_id] * self.tofs_sensors_beacon[rx_id]
+        print("beta", self.beta)
+        print("phi", self.phi)
+        for tag_id in self.tag_ids:
+            for rx_id in self.geo_coordinates_rx:
+                if self.reference_rx_id != rx_id and self.beacon_id != tag_id:
+                    if self.reference_rx_id in self.toas[tag_id] and rx_id in self.toas[tag_id]:
+                        # Equation (15)
+                        self.toads[tag_id][rx_id] = ( self.toas[tag_id][rx_id] \
+                            - self.phi[rx_id] ) / self.beta[rx_id] \
+                            - ( self.toas[tag_id][self.reference_rx_id] \
+                            - self.phi[self.reference_rx_id] )
 
     def update_positions(self):
         for tag_id in self.tag_ids:
