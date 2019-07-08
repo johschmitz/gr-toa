@@ -3906,7 +3906,7 @@
     <key>toa_toa_estimator_pub</key>
     <param>
       <key>acquisition_interval</key>
-      <value>1</value>
+      <value>3</value>
     </param>
     <param>
       <key>alias</key>
@@ -3953,6 +3953,10 @@
       <value>0</value>
     </param>
     <param>
+      <key>max_tracking_fails</key>
+      <value>3</value>
+    </param>
+    <param>
       <key>minoutbuf</key>
       <value>0</value>
     </param>
@@ -3963,6 +3967,10 @@
     <param>
       <key>sequence_list_path</key>
       <value>./apps/reference_files/sequence_list.txt</value>
+    </param>
+    <param>
+      <key>tx_jitter</key>
+      <value>0.001</value>
     </param>
     <param>
       <key>zmq_address</key>

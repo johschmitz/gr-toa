@@ -39,7 +39,7 @@ class top_block(gr.top_block):
         self.max_tracking_fails = cfg["receiver"]["max_tracking_fails"]
         self.sequence_list_file = cfg["receiver"]["sequence_list_file"]
 
-        self.zmq_publisher_addr = zmq_publisher_addr = "tcp://*:" + str(6000+args.id)
+        self.zmq_publisher_addr = "tcp://*:" + str(6000+args.id)
 
         ##################################################
         # Blocks

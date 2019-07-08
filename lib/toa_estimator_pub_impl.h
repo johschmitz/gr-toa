@@ -34,6 +34,7 @@ namespace gr {
             int32_t tx_interval_spec; // [samples]
             int32_t tx_interval_estimate;
             bool tx_interval_estimate_valid;
+            int32_t tx_jitter; // [samples]
             int32_t tracking_counter; // [samples]
             int32_t tracking_fail_counter;
             bool detect_in_window;
@@ -59,7 +60,7 @@ namespace gr {
             const float d_detection_threshold;
             int d_debug_output_tag_id;
             int d_acquisition_counter;
-            int d_acquisition_interval;
+            float d_acquisition_interval;
             
             zmq::context_t *d_context;
             zmq::socket_t *d_socket;

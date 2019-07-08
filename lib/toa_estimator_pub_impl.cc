@@ -131,12 +131,14 @@ namespace gr {
                     std::stringstream line_stream;
                     uint16_t tag_id;
                     float tx_interval_s;
+                    float tx_jitter_s;
                     std::string sequence_filename;
                     uint32_t num_samples;
 
                     // Get filename and length of the next sequence file
                     line_stream << line;
-                    line_stream >> tag_id >> tx_interval_s >> sequence_filename >> num_samples;
+                    line_stream >> tag_id >> tx_interval_s >> tx_jitter_s
+                        >> sequence_filename >> num_samples;
                     // Open sequence file
                     std::string sequence_path = sequence_dir + sequence_filename;
                     std::ifstream sequence_file(sequence_path, std::ios::binary);
@@ -159,15 +161,22 @@ namespace gr {
                         tag.tx_interval_spec = tx_interval_s * d_sample_rate;
                         tag.tx_interval_estimate = tag.tx_interval_spec;
                         tag.tx_interval_estimate_valid = false;
+                        tag.tx_jitter = tx_jitter_s * d_sample_rate;
                         tag.tracking_counter = tag.tx_interval_spec;
                         tag.tracking_fail_counter = 0;
                         tag.last_detection_idx = 0;
                         tag.detect_in_window = false;
                         // Check if two transmissions fit into acquisition interval
                         if ( d_acquisition_interval < 2 * tx_interval_s ) {
-                            std::cerr << "Error: acquisition interval to short for transmission interval of tag "
-                                      << tag.id << ". The receiver needs to be able to detect at least two"
-                                                   " consecutive transmissions." << std::endl;
+                            std::cerr << "Error: acquisition interval too short for transmission "
+                                "interval of tag " << tag.id << ". The receiver needs to be able "
+                                " to detect at least two consecutive transmissions." << std::endl;
+                            exit(1);
+                        }
+                        // Check if jitter is not too large
+                        if ( 0.5 * d_overlap < tag.tx_jitter ) {
+                            std::cerr << "Error: Tx jitter of tag " << tag.id << " too large, "
+                                "needs to be smaller than half the window overlap." << std::endl;
                             exit(1);
                         }
                         // Check if this is the tag whose correlation we want to observe
@@ -362,7 +371,7 @@ namespace gr {
                 // Any tracked tag in window?
                 for (auto&& tag : d_tags_tracking) {
                     tag->tracking_counter -= d_overlap;
-                    if (0 >= tag->tracking_counter) {
+                    if ( tag->tx_jitter >= tag->tracking_counter) {
                         tag->detect_in_window = true;
                         any_tag_in_window = true;
                     }
@@ -419,7 +428,6 @@ namespace gr {
                     auto it = d_tags_tracking.begin();
                     while (it != d_tags_tracking.end()) {
                         if ((*it)->detect_in_window) {
-                            (*it)->detect_in_window = false;
                             if ( detect(*it) ) {
                                 // Check if debug output enabled
                                 if (1 == output_items.size()) {
@@ -434,24 +442,33 @@ namespace gr {
                                 }
                                 ++it;
                             }
-                            // Move tag back to acquisition list if not detected
                             else {
-                                (*it)->tracking_fail_counter += 1;
-                                std::cout << "Tracking fail for tag " << (*it)->id << std::endl;
-                                // Reset tracking counter to try again
-                                (*it)->tracking_counter = (*it)->tx_interval_estimate 
-                                    + (*it)->tracking_counter;
-std::cout << "(*it)->tracking_counter " << (*it)->tracking_counter << std::endl;
-                                // If too many tracking fails occured move tag back to acquisition
-                                if (3 <= (*it)->tracking_fail_counter) {
-                                    (*it)->tracking_fail_counter = 0;
-                                    std::cout << "Tracking loss for tag " << (*it)->id << std::endl;
-                                    // Reset tracking interval estimate
-                                    (*it)->tx_interval_estimate = (*it)->tx_interval_spec;
-                                    (*it)->tx_interval_estimate_valid = false;
-                                    // Move to acquisition list
-                                    d_tags_acquisition.push_back(*it);
-                                    it = d_tags_tracking.erase(it);
+                                // Only fail if not close to edge (tx jitter issue)
+                                if ( (*it)->tx_jitter <= -(*it)->tracking_counter ) {
+                                    (*it)->tracking_fail_counter += 1;
+                                    std::cout << "Tracking fail for tag " << (*it)->id << std::endl;
+                                    // If too many tracking fails occured move tag back to acquisition
+                                    if (3 <= (*it)->tracking_fail_counter) {
+                                        (*it)->tracking_fail_counter = 0;
+                                        (*it)->detect_in_window = false;
+                                        std::cout << "Tracking loss for tag " << (*it)->id << std::endl;
+                                        // Reset tracking interval estimate
+                                        (*it)->tx_interval_estimate = (*it)->tx_interval_spec;
+                                        (*it)->tx_interval_estimate_valid = false;
+                                        // Move to acquisition list
+                                        d_tags_acquisition.push_back(*it);
+                                        it = d_tags_tracking.erase(it);
+                                    }
+                                    else {
+                                        // Reset tracking counter to try again
+                                        (*it)->detect_in_window = false;
+                                        (*it)->tracking_counter = (*it)->tx_interval_estimate 
+                                            + (*it)->tracking_counter;
+                                        ++it;
+                                    }
+                                }
+                                else {
+                                    ++it;
                                 }
                             }
                         }
