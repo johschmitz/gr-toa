@@ -309,8 +309,13 @@ namespace gr {
                         + xcorr_peak_idx_in_window;
                 }
                 else {
-                    // Calculate difference to expected detection to reset counter for next try
-                    tag->tracking_counter = tag->tx_interval_estimate + tag->tracking_counter;
+                    if (0 > tag->tracking_counter) {
+                        // Remove negative tracking counter to correctly look for next burst
+                        tag->tracking_counter = tag->tx_interval_estimate + tag->tracking_counter;
+                    }
+                    else {
+                        tag->tracking_counter = tag->tx_interval_estimate;
+                    }
                 }
                 // End of debug output
                 std::cout << " tag->tracking_counter (new) " << tag->tracking_counter << "\n"
@@ -378,17 +383,11 @@ namespace gr {
                 }
                 // Only do signal processing if any tag might be in window
                 if (true == any_tag_in_window) {
-                    // Remove DC
-                    float in_dc_free[d_window_size];
-                    for(int idx = 0; idx < d_window_size; idx++){
-                        in_dc_free[idx] = in[idx] * 2 - 1;
-                    }
-
                     // Calculate fast circular correlation using FFT like this:
                     // xcorr(a,b) = fliplr(fftshift(ifft(fft([0 b]) .* conj(fft([a 0])))))
                     // Prepare FFT input (zero padding)
                     std::memset(d_fft->get_inbuf(), 0, d_overlap*sizeof(float));
-                    std::memcpy(d_fft->get_inbuf() + d_overlap, in_dc_free, d_window_size*sizeof(float));
+                    std::memcpy(d_fft->get_inbuf() + d_overlap, in, d_window_size*sizeof(float));
 
                     // Calculate FFT
                     d_fft->execute();

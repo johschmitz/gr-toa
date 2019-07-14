@@ -937,7 +937,7 @@
     </param>
     <param>
       <key>_enabled</key>
-      <value>1</value>
+      <value>0</value>
     </param>
     <param>
       <key>_coordinate</key>
@@ -3922,7 +3922,7 @@
     </param>
     <param>
       <key>debug_output_tag_id</key>
-      <value>0</value>
+      <value>1</value>
     </param>
     <param>
       <key>threshold</key>
@@ -3967,10 +3967,6 @@
     <param>
       <key>sequence_list_path</key>
       <value>./apps/reference_files/sequence_list.txt</value>
-    </param>
-    <param>
-      <key>tx_jitter</key>
-      <value>0.001</value>
     </param>
     <param>
       <key>zmq_address</key>
@@ -4040,6 +4036,12 @@
   <connection>
     <source_block_id>blocks_sub_xx_0</source_block_id>
     <sink_block_id>qtgui_time_sink_x_1</sink_block_id>
+    <source_key>0</source_key>
+    <sink_key>0</sink_key>
+  </connection>
+  <connection>
+    <source_block_id>blocks_sub_xx_0</source_block_id>
+    <sink_block_id>toa_toa_estimator_pub_0</sink_block_id>
     <source_key>0</source_key>
     <sink_key>0</sink_key>
   </connection>

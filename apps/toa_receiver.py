@@ -61,7 +61,6 @@ class top_block(gr.top_block):
         self.osmosdr_source.set_antenna('', 0)
         self.osmosdr_source.set_bandwidth(0, 0)
 
-        self.blocks_threshold_ff = blocks.threshold_ff(0, 0, 0)
         self.blocks_sub_xx = blocks.sub_ff(1)
         self.blocks_complex_to_mag_0_0 = blocks.complex_to_mag(1)
         self.blocks_complex_to_mag_0 = blocks.complex_to_mag(1)
@@ -81,8 +80,7 @@ class top_block(gr.top_block):
         self.connect((self.band_pass_filter_0_0, 0), (self.blocks_complex_to_mag_0_0, 0))
         self.connect((self.blocks_complex_to_mag_0, 0), (self.blocks_sub_xx, 0))
         self.connect((self.blocks_complex_to_mag_0_0, 0), (self.blocks_sub_xx, 1))
-        self.connect((self.blocks_sub_xx, 0), (self.blocks_threshold_ff, 0))
-        self.connect((self.blocks_threshold_ff, 0), (self.toa_toa_estimator_pub, 0))
+        self.connect((self.blocks_sub_xx, 0), (self.toa_toa_estimator_pub, 0))
         self.connect((self.osmosdr_source, 0), (self.band_pass_filter_0, 0))
         self.connect((self.osmosdr_source, 0), (self.band_pass_filter_0_0, 0))
 
