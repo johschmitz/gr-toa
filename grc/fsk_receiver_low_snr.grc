@@ -4366,11 +4366,11 @@
     </param>
     <param>
       <key>debug_output_tag_id</key>
-      <value>1</value>
+      <value>0</value>
     </param>
     <param>
       <key>threshold</key>
-      <value>0.02</value>
+      <value>3</value>
     </param>
     <param>
       <key>_enabled</key>

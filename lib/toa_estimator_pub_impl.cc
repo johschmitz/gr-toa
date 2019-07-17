@@ -76,6 +76,7 @@ namespace gr {
               d_fft_norm_factor(1.0 / ( (float)(fft_size) * (float)(fft_size/3) )),
               d_sample_rate(sample_rate),
               d_detection_threshold(detection_threshold),
+              d_sidelobe_check_distance(0.00005*d_sample_rate),
               d_debug_output_tag_id(debug_output_tag_id),
               d_sample_counter(0),
               d_acquisition_interval(acquisition_interval),
@@ -238,17 +239,26 @@ namespace gr {
             d_ifft->execute();
             float* ifft_out = d_ifft->get_outbuf();
 
+            auto compare = [](const float& a, const float& b) -> float
+                {
+                    return std::abs(a) < std::abs(b);
+                };
+
             // Find index of peak value in 2nd 3rd of cross correlation
             // Why? Consider the overlap and the length of the cross correlation
             int xcorr_peak_idx = std::distance(ifft_out,
-                std::max_element(ifft_out + d_overlap, ifft_out + d_window_size,
-                [](const float& a, const float& b)
-                {
-                    return std::abs(a) < std::abs(b);
-                }));
-                
-            // Check if detection peak is above threshold
-            if (d_detection_threshold < std::abs(ifft_out[xcorr_peak_idx])) {
+                std::max_element(ifft_out + d_overlap, ifft_out + d_window_size, compare));
+
+            // Find max of sidelobes
+            int xcorr_sidelobe_max_idx = std::distance(ifft_out,
+                std::max_element(ifft_out + xcorr_peak_idx - 2*d_sidelobe_check_distance,
+                ifft_out + xcorr_peak_idx - d_sidelobe_check_distance, compare));
+
+            float peak_to_sidelobe_ratio = (std::abs(ifft_out[xcorr_peak_idx])
+                / std::abs(ifft_out[xcorr_sidelobe_max_idx]));
+
+            // Check if detection peak to sideloab ratio is above threshold
+            if ( d_detection_threshold < peak_to_sidelobe_ratio ) {
 
                 // Timestamp
                 double timestamp = (double)(std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -288,6 +298,7 @@ namespace gr {
                           << " ifft_out[xcorr_peak_idx-1] " << ifft_out[xcorr_peak_idx-1] << "\n"
                           << " ifft_out[xcorr_peak_idx] " << ifft_out[xcorr_peak_idx] << "\n"
                           << " ifft_out[xcorr_peak_idx+1] " << ifft_out[xcorr_peak_idx+1] << "\n"
+                          << " peak_to_sidelobe_ratio " << peak_to_sidelobe_ratio << "\n"
                           << " tag->tracking_counter " << tag->tracking_counter << "\n"
                           << " xcorr_peak_idx_in_window " << xcorr_peak_idx_in_window << "\n"
                           << " burst_start_idx " << burst_start_idx << "\n"

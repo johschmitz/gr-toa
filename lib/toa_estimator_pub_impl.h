@@ -58,6 +58,7 @@ namespace gr {
             const float d_fft_norm_factor;
             const int d_sample_rate;
             const float d_detection_threshold;
+            const int d_sidelobe_check_distance;
             int d_debug_output_tag_id;
             int d_acquisition_counter;
             float d_acquisition_interval;
