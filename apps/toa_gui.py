@@ -158,7 +158,7 @@ class gui(QtGui.QMainWindow):
                 y = self.locations_history[tag_id][0][1]
                 if tag_id in self.tag_markers:
                     self.tag_markers[tag_id].remove()
-                self.tag_markers[tag_id] = plt.text(x, y, 1, size=10, ha="center", va="center",
+                self.tag_markers[tag_id] = plt.text(x, y, str(tag_id), size=8, ha="center", va="center",
                     bbox=dict(boxstyle="round", ec=(0.25, 0.5, 1.0), fc=(0.4, 0.8, 1.0),) )
                 self.canvas.draw()
 
