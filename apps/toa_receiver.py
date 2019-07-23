@@ -24,13 +24,11 @@ class top_block(gr.top_block):
         # Variables
         ##################################################
         self.f_carrier = cfg["receiver"]["f_carrier"]
-        self.fsk_deviation = cfg["receiver"]["fsk_deviation"]
         self.sample_rate = cfg["receiver"]["sample_rate"]
         self.num_chips = cfg["receiver"]["num_chips"]
         self.chip_rate = cfg["receiver"]["chip_rate"]
-        self.bandpass_decim_rate = cfg["receiver"]["bandpass_decim_rate"]
         self.samples_per_burst = int(self.num_chips*self.sample_rate/self.chip_rate)
-        self.fft_size = self.samples_per_burst/self.bandpass_decim_rate*3
+        self.fft_size = 3*self.samples_per_burst
         self.gain = cfg["receiver"]["gain"]
         self.if_gain = cfg["receiver"]["if_gain"]
         self.bb_gain = cfg["receiver"]["bb_gain"]
@@ -38,6 +36,8 @@ class top_block(gr.top_block):
         self.detection_threshold = cfg["receiver"]["detection_threshold"]
         self.max_tracking_fails = cfg["receiver"]["max_tracking_fails"]
         self.sequence_list_file = cfg["receiver"]["sequence_list_file"]
+        self.bp_cutoff_low = cfg["receiver"]["bp_cutoff_low"]
+        self.bp_cutoff_high = cfg["receiver"]["bp_cutoff_high"]
         self.bp_transition_width = cfg["receiver"]["bp_transition_width"]
 
         self.zmq_publisher_addr = "tcp://*:" + str(6000+args.id)
@@ -46,7 +46,7 @@ class top_block(gr.top_block):
         # Blocks
         ##################################################
         self.toa_toa_estimator_pub = toa.toa_estimator_pub(self.fft_size, \
-            self.sample_rate/self.bandpass_decim_rate, self.acquisition_interval, \
+            self.sample_rate, self.acquisition_interval, \
             self.detection_threshold, self.max_tracking_fails, \
             -1, self.sequence_list_file, self.zmq_publisher_addr)
         self.osmosdr_source = osmosdr.source(args=args.device_args)
@@ -66,14 +66,13 @@ class top_block(gr.top_block):
         self.blocks_complex_to_mag_0_0 = blocks.complex_to_mag(1)
         self.blocks_complex_to_mag_0 = blocks.complex_to_mag(1)
         self.band_pass_filter_0_0 = filter.fft_filter_ccc(1, (firdes.complex_band_pass(1,
-            self.sample_rate, 0, self.fsk_deviation, self.bp_transition_width,
-            firdes.WIN_RECTANGULAR, 6.76)), 1)
+            self.sample_rate, self.bp_cutoff_low, self.bp_cutoff_high, self.bp_transition_width,
+            firdes.WIN_RECTANGULAR, 1.0)), 1)
         self.band_pass_filter_0_0.declare_sample_delay(0)
         self.band_pass_filter_0 = filter.fft_filter_ccc(1, (firdes.complex_band_pass(1,
-            self.sample_rate, -self.fsk_deviation, 0, self.bp_transition_width,
-            firdes.WIN_RECTANGULAR, 6.76)), 1)
+            self.sample_rate, -self.bp_cutoff_high, -self.bp_cutoff_low, self.bp_transition_width,
+            firdes.WIN_RECTANGULAR, 1.0)), 1)
         self.band_pass_filter_0.declare_sample_delay(0)
-
 
         ##################################################
         # Connections
@@ -85,31 +84,6 @@ class top_block(gr.top_block):
         self.connect((self.blocks_sub_xx, 0), (self.toa_toa_estimator_pub, 0))
         self.connect((self.osmosdr_source, 0), (self.band_pass_filter_0, 0))
         self.connect((self.osmosdr_source, 0), (self.band_pass_filter_0_0, 0))
-
-    def get_sample_rate(self):
-        return self.sample_rate
-
-    def set_sample_rate(self, sample_rate):
-        self.sample_rate = sample_rate
-        self.set_samples_per_symbol(int(self.sample_rate/self.chip_rate))
-        self.set_samples_per_burst(int(self.num_chips*self.sample_rate/self.chip_rate))
-        self.osmosdr_source.set_sample_rate(self.sample_rate)
-        self.band_pass_filter_0_0.set_taps((firdes.complex_band_pass(1,
-            self.sample_rate, 0, self.fsk_deviation, self.bp_transition_width,
-            firdes.WIN_RECTANGULAR, self.bp_beta)))
-        self.band_pass_filter_0.set_taps((firdes.complex_band_pass(1,
-            self.sample_rate, -self.fsk_deviation, 0, self.bp_transition_width,
-            firdes.WIN_RECTANGULAR, self.bp_beta)))
-
-    def set_samples_per_burst(self, samples_per_burst):
-        self.samples_per_burst = samples_per_burst
-        self.set_fft_size(self.samples_per_burst/self.bandpass_decim_rate*3)
-
-    def set_samples_per_symbol(self, samples_per_symbol):
-        self.samples_per_symbol = samples_per_symbol
-
-    def set_fft_size(self, fft_size):
-        self.fft_size = fft_size
 
     def sigint_handler(self, sig, frame):
         self.stop()
