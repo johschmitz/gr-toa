@@ -387,6 +387,7 @@ namespace gr {
                 // Any tracked tag in window?
                 for (auto&& tag : d_tags_tracking) {
                     tag->tracking_counter -= d_overlap;
+                    // Check if in jitter region or fully in current window
                     if ( tag->tx_jitter >= tag->tracking_counter) {
                         tag->detect_in_window = true;
                         any_tag_in_window = true;
@@ -469,14 +470,15 @@ namespace gr {
                                         d_tags_acquisition.push_back(*it);
                                         it = d_tags_tracking.erase(it);
                                     }
+                                    // Reset tracking counter to try again after one more Tx period
                                     else {
-                                        // Reset tracking counter to try again
                                         (*it)->detect_in_window = false;
                                         (*it)->tracking_counter = (*it)->tx_interval_estimate 
                                             + (*it)->tracking_counter;
                                         ++it;
                                     }
                                 }
+                                // Try again next window
                                 else {
                                     ++it;
                                 }
