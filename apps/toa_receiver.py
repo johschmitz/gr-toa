@@ -2,6 +2,7 @@
 
 import signal
 import sys
+import os
 from gnuradio import blocks
 from gnuradio import eng_notation
 from gnuradio import filter
@@ -11,9 +12,9 @@ from gnuradio.filter import firdes
 from optparse import OptionParser
 import osmosdr
 import time
+from toa import toa_estimator_pub, config_file_parser
 import toa
 import argparse
-import config_file_parser
 
 class top_block(gr.top_block):
 
@@ -35,7 +36,6 @@ class top_block(gr.top_block):
         self.acquisition_interval = cfg["receiver"]["acquisition_interval"]
         self.detection_threshold = cfg["receiver"]["detection_threshold"]
         self.max_tracking_fails = cfg["receiver"]["max_tracking_fails"]
-        self.sequence_list_file = cfg["receiver"]["sequence_list_file"]
         self.bp_cutoff_low = cfg["receiver"]["bp_cutoff_low"]
         self.bp_cutoff_high = cfg["receiver"]["bp_cutoff_high"]
         self.bp_transition_width = cfg["receiver"]["bp_transition_width"]
@@ -48,7 +48,7 @@ class top_block(gr.top_block):
         self.toa_toa_estimator_pub = toa.toa_estimator_pub(self.fft_size, \
             self.sample_rate, self.acquisition_interval, \
             self.detection_threshold, self.max_tracking_fails, \
-            -1, self.sequence_list_file, self.zmq_publisher_addr)
+            -1, args.sequence_list_file, self.zmq_publisher_addr)
         self.osmosdr_source = osmosdr.source(args=args.device_args)
         self.osmosdr_source.set_sample_rate(self.sample_rate)
         self.osmosdr_source.set_center_freq(self.f_carrier, 0)
@@ -93,15 +93,28 @@ class top_block(gr.top_block):
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--id", type=int, default="0",
-                        help="Receiver id, default: 0.")
+                        help="Receiver id. Default: 0.")
     parser.add_argument("-d", "--device-args", type=str, default="rtl=0",
-                        help="OsmoSDR source device args, e.g.,"
-                        " hackrf=0, rtl=1")
-    return parser.parse_args()
+                        help="OsmoSDR source device args, e.g., "
+                        "hackrf=0, rtl=1")
+    parser.add_argument("-c", "--config-file", type=str, default="",
+                        help="Path to config file. Default: <bin_dir>/toa_config.ini")
+    parser.add_argument("-s", "--sequence-list-file", type=str, default="",
+                        help="Path to sequence list file with CDMA reference sequences. "
+                        "Default: <bin_dir>/reference_files/sequence_list.txt")
+    args = parser.parse_args()
+    # Set default paths for config files
+    if 0 == len(args.config_file):
+        args.config_file = os.path.dirname(sys.argv[0]) + "/toa_config.ini"
+    if 0 == len(args.sequence_list_file):
+        args.sequence_list_file = os.path.dirname(sys.argv[0]) + "/reference_files/sequence_list.txt"
+    return args
 
 def main():
-    cfg = config_file_parser.parse_config_file("toa_config.ini")
     args = parse_args()
+    print("Using config file:", args.config_file)
+    print("Using sequence list file:", args.sequence_list_file)
+    cfg = config_file_parser.parse_config_file(args.config_file)
     tb = top_block(cfg, args)
     tb.start()
     signal.signal(signal.SIGINT, tb.sigint_handler)

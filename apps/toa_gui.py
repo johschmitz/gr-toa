@@ -4,7 +4,6 @@
 # Imports
 ###############################################################################
 import argparse
-import config_file_parser
 import sys
 import os
 import signal
@@ -16,10 +15,8 @@ from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg
 from mpl_toolkits.basemap import Basemap
 from PIL import Image, PngImagePlugin
 import apsw
-import osm_tile_download
-import gui_helpers
-import map_helpers
-from zmq_manager import zmq_manager
+from toa import config_file_parser, gui_helpers, map_helpers, osm_tile_download
+from toa.zmq_manager import zmq_manager
 import pickle
 from collections import deque
 
@@ -267,11 +264,18 @@ class gui(QtGui.QMainWindow):
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    return parser.parse_args()
+    parser.add_argument("-c", "--config-file", type=str, default="",
+                        help="Path to config file. Default: toa_config.ini")
+    args = parser.parse_args()
+    # Set default path for config file
+    if 0 == len(args.config_file):
+        args.config_file = os.path.dirname(sys.argv[0]) + "/toa_config.ini"
+    return args
 
 if __name__ == "__main__":
-    cfg = config_file_parser.parse_config_file("toa_config.ini")
     args = parse_args()
+    print("Using config file:", args.config_file)
+    cfg = config_file_parser.parse_config_file(args.config_file)
     qapp = Qt.QApplication(sys.argv)
     qapp.main_window = gui(cfg,args)
     qapp.main_window.show()

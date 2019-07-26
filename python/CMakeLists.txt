@@ -31,7 +31,12 @@ endif()
 GR_PYTHON_INSTALL(
     FILES
         toa/__init__.py
-        zmq_manager.py
+        toa/chan_ho_algorithm.py
+        toa/config_file_parser.py
+        toa/gui_helpers.py
+        toa/map_helpers.py
+        toa/osm_tile_download.py
+        toa/zmq_manager.py
     DESTINATION
         ${GR_PYTHON_DIR}/toa
 )

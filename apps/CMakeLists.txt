@@ -19,8 +19,28 @@
 
 include(GrPython)
 
-GR_PYTHON_INSTALL(
+INSTALL(
     PROGRAMS
+        toa_gui.py
+        toa_receiver.py
+        toa_server.py
     DESTINATION
         bin
+)
+
+INSTALL(
+    FILES
+        toa_config.ini
+    DESTINATION
+        bin
+)
+
+INSTALL(
+    FILES
+        reference_files/sequence_list.txt
+        reference_files/cdma_sequence_fft_id_0000.complex
+        reference_files/cdma_sequence_fft_id_0001.complex
+        reference_files/cdma_sequence_fft_id_0002.complex
+    DESTINATION
+        bin/reference_files
 )

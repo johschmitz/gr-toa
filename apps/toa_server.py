@@ -1,19 +1,18 @@
 #!/usr/bin/env python3
 
 import argparse
-import config_file_parser
+from toa import config_file_parser, chan_ho_algorithm, map_helpers
+from toa.zmq_manager import zmq_manager
+import zmq
+import pickle
 import signal
 import sys
+import os
 import numpy as np
 import apsw
 import datetime
 from collections import deque
-import zmq
-import pickle
-import map_helpers
 from mpl_toolkits.basemap import Basemap
-from zmq_manager import zmq_manager
-import chan_ho_algorithm
 from threading import Lock
 import copy
 import math
@@ -259,11 +258,18 @@ def parse_args():
                         help="Name of the database with TOAs and localization results.")
     parser.add_argument("-r", "--record-to-database", action="store_true",
                         help="Activate recording of TOAs and results to database.")
-    return parser.parse_args()
+    parser.add_argument("-c", "--config-file", type=str, default="",
+                        help="Path to config file. Default: toa_config.ini")
+    args = parser.parse_args()
+    # Set default path for config file
+    if 0 == len(args.config_file):
+        args.config_file = os.path.dirname(sys.argv[0]) + "/toa_config.ini"
+    return args
 
 if __name__ == "__main__":
-    cfg = config_file_parser.parse_config_file("toa_config.ini")
     args = parse_args()
+    print("Using config file:", args.config_file)
+    cfg = config_file_parser.parse_config_file(args.config_file)
     server = toa_server(cfg, args)
     signal.signal(signal.SIGINT, server.sigint_handler)
     signal.pause()
