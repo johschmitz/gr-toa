@@ -248,7 +248,7 @@
     </param>
     <param>
       <key>value</key>
-      <value>1e6</value>
+      <value>999756.0</value>
     </param>
   </block>
   <block>
@@ -509,7 +509,7 @@
     </param>
     <param>
       <key>value</key>
-      <value>2.0e6</value>
+      <value>2.4e6</value>
     </param>
   </block>
   <block>
@@ -1215,6 +1215,37 @@
     </param>
   </block>
   <block>
+    <key>import</key>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>comment</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(1336, 12)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>id</key>
+      <value>import_0</value>
+    </param>
+    <param>
+      <key>import</key>
+      <value>from toa import receiver_helpers</value>
+    </param>
+  </block>
+  <block>
     <key>osmosdr_source</key>
     <param>
       <key>alias</key>
@@ -1234,7 +1265,7 @@
     </param>
     <param>
       <key>dc_offset_mode0</key>
-      <value>0</value>
+      <value>2</value>
     </param>
     <param>
       <key>corr0</key>
@@ -1254,7 +1285,7 @@
     </param>
     <param>
       <key>iq_balance_mode0</key>
-      <value>0</value>
+      <value>2</value>
     </param>
     <param>
       <key>gain0</key>
@@ -4045,7 +4076,7 @@
     </param>
     <param>
       <key>threshold</key>
-      <value>4</value>
+      <value>5</value>
     </param>
     <param>
       <key>_enabled</key>
@@ -4053,7 +4084,7 @@
     </param>
     <param>
       <key>fft_size</key>
-      <value>fft_size</value>
+      <value>receiver_helpers.calculate_fft_size(samples_per_burst, min_exponent=4)</value>
     </param>
     <param>
       <key>_coordinate</key>

@@ -151,6 +151,11 @@ namespace gr {
                                   << "\" not found." << std::endl;
                         exit(1);
                     }
+                    if (num_samples != d_fft_size) {
+                        std::cerr << "Error: number of samples in reference file "
+                            "should be equal to FFT size." << std::endl;
+                        exit(1);
+                    }
                     if (num_samples > d_fft_size_half_fftw) {
                         // Prepare buffer
                         char buffer[d_fft_size_half_fftw * sizeof(gr_complex)];

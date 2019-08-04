@@ -12,9 +12,10 @@ from gnuradio.filter import firdes
 from optparse import OptionParser
 import osmosdr
 import time
-from toa import toa_estimator_pub, config_file_parser
+from toa import toa_estimator_pub, config_file_parser, receiver_helpers
 import toa
 import argparse
+
 
 class top_block(gr.top_block):
 
@@ -29,7 +30,7 @@ class top_block(gr.top_block):
         self.num_chips = cfg["receiver"]["num_chips"]
         self.chip_rate = cfg["receiver"]["chip_rate"]
         self.samples_per_burst = int(self.num_chips*self.sample_rate/self.chip_rate)
-        self.fft_size = 3*self.samples_per_burst
+        self.fft_size = receiver_helpers.calculate_fft_size(self.samples_per_burst, min_exponent=4)
         self.gain = cfg["receiver"]["gain"]
         self.if_gain = cfg["receiver"]["if_gain"]
         self.bb_gain = cfg["receiver"]["bb_gain"]
@@ -53,8 +54,8 @@ class top_block(gr.top_block):
         self.osmosdr_source.set_sample_rate(self.sample_rate)
         self.osmosdr_source.set_center_freq(self.f_carrier, 0)
         self.osmosdr_source.set_freq_corr(0, 0)
-        self.osmosdr_source.set_dc_offset_mode(0, 0)
-        self.osmosdr_source.set_iq_balance_mode(0, 0)
+        self.osmosdr_source.set_dc_offset_mode(2, 0)
+        self.osmosdr_source.set_iq_balance_mode(2, 0)
         self.osmosdr_source.set_gain_mode(False, 0)
         self.osmosdr_source.set_gain(self.gain, 0)
         self.osmosdr_source.set_if_gain(self.if_gain, 0)
