@@ -143,23 +143,22 @@ class toa_server():
             self.db_cursor.execute("insert into TOAs values(?,?,?,?,?,?)", \
                 (timestamp_server, rx_id, tag_id, timestamp_receiver, toa_ns, correlation, databit))
         
+        self.mutex.acquire()
         self.update_toa_buffer(tag_id, rx_id, (timestamp_receiver, toa_ns, abs(correlation), databit))
+        self.mutex.release()
 
     def update_toa_buffer(self, tag_id, rx_id, toa):
-        self.mutex.acquire()
+        
         self.toa_buffer[tag_id][rx_id].appendleft(toa)
         if self.toa_buffer_len < len(self.toa_buffer[tag_id][rx_id]):
             self.toa_buffer[tag_id][rx_id].pop()
-        self.mutex.release()
         if 0 == tag_id and 0 == rx_id:
             self.update_results()
 
     def update_results(self):
-        self.mutex.acquire()
         self.update_latest_associated_toas()
         self.update_toads()
         self.update_positions()
-        self.mutex.release()
         self.socket_toads.send(pickle.dumps(self.toads))
         self.socket_positions.send(pickle.dumps(self.pos_tags))
 
