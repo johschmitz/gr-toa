@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 
 import argparse
-import config_file_parser
+from toa import config_file_parser, map_helpers
 import signal
 import sys
 import zmq
 from apscheduler.schedulers.background import BackgroundScheduler
 from mpl_toolkits.basemap import Basemap
-import map_helpers
 import numpy as np
 import math
 
@@ -101,7 +100,8 @@ class toa_receivers_test():
         for tag_id in self.tag_ids:
             for rx_id in self.geo_coordinates_rx:
                 messagedata = np.array(tag_id, dtype=np.uint16).tostring() \
-                     + np.array(self.toas[tag_id][rx_id], dtype=np.float64).tostring() \
+                    + np.array(self.clocks[rx_id], dtype=np.float64).tostring() \
+                    + np.array(self.toas[tag_id][rx_id], dtype=np.float64).tostring() \
                     + np.array(self.correlations[tag_id][rx_id], dtype=np.float32).tostring() \
                     + np.array(self.databits[tag_id], dtype=np.uint8).tostring()
                 self.socket_toas[rx_id].send(messagedata)
