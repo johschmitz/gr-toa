@@ -99,8 +99,9 @@ class toa_receivers_test():
         self.update_toas()
         for tag_id in self.tag_ids:
             for rx_id in self.geo_coordinates_rx:
+                timestamp = self.clocks[rx_id] - self.phis[rx_id]
                 messagedata = np.array(tag_id, dtype=np.uint16).tostring() \
-                    + np.array(self.clocks[rx_id], dtype=np.float64).tostring() \
+                    + np.array(timestamp, dtype=np.float64).tostring() \
                     + np.array(self.toas[tag_id][rx_id], dtype=np.float64).tostring() \
                     + np.array(self.correlations[tag_id][rx_id], dtype=np.float32).tostring() \
                     + np.array(self.databits[tag_id], dtype=np.uint8).tostring()
