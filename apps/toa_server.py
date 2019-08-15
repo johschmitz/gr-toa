@@ -37,6 +37,7 @@ class toa_server():
         self.database = cfg["server"]["database"]
         self.toa_buffer_len = cfg["server"]["toa_buffer_len"]
         self.association_time = cfg["server"]["association_time"]
+        self.rx_ips = cfg["server"]["rx_ips"]
 
         # Initialize clock correction algorithm
         self.beta = dict()
@@ -49,7 +50,8 @@ class toa_server():
         self.zmq_manager = zmq_manager()
         for rx_id in self.geo_coordinates_rx:
             self.zmq_manager.add_socket(rx_id, \
-                "tcp://localhost:"+ str(self.zmq_rx_data_port_base + rx_id), self.rx_callback)
+                "tcp://" + self.rx_ips[rx_id] + ":"+ \
+                str(self.zmq_rx_data_port_base + rx_id), self.rx_callback)
 
         self.mutex = Lock()
 
