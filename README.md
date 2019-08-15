@@ -13,6 +13,14 @@ on a map in the graphical user interface.
 - GNU Radio 3.7.13
 - gr-osmosdr
 - python3-numpy
+- python3-pyproj
+- python3-matplotlib
+- python3-mpltoolkits.basemap
+- python3-zmq
+- python3-apsw
+- python3-pyqt4
+- python3-qwt
+- python3-tk
 
 ## How to build
 
