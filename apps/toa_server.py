@@ -150,7 +150,6 @@ class toa_server():
         self.mutex.release()
 
     def update_toa_buffer(self, tag_id, rx_id, toa):
-        
         self.toa_buffer[tag_id][rx_id].appendleft(toa)
         if self.toa_buffer_len < len(self.toa_buffer[tag_id][rx_id]):
             self.toa_buffer[tag_id][rx_id].pop()
@@ -188,8 +187,8 @@ class toa_server():
             for rx_id in self.geo_coordinates_rx:
                 # We need at least two tag receptions from the sensor
                 if 2 <= len(self.toa_buffer[tag_id][rx_id]):
-                    # Check if the latest or the second latest buffer elements match
-                    # At most an offset of 1 s is permissible in timestamps
+                    # Check if the latest or the second latest buffer elements match.
+                    # At most an offset of self.association_time s is permissible in timestamps.
                     if self.association_time >= abs(max_timestamp \
                         - self.toa_buffer[tag_id][rx_id][previous][idx_timestamp]) \
                         and association_databit == self.toa_buffer[tag_id][rx_id][previous][idx_databit]:
