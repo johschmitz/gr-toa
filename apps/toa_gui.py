@@ -36,6 +36,7 @@ class gui(QtGui.QMainWindow):
         self.zmq_server_port_positions = cfg["server"]["zmq_server_port_positions"]
         self.toads_history_len = cfg["gui"]["toads_history_len"]
         self.locations_history_len = cfg["gui"]["locations_history_len"]
+        self.server_ip = cfg["gui"]["server_ip"]
 
         QtGui.QMainWindow.__init__(self, parent)
 
@@ -101,9 +102,11 @@ class gui(QtGui.QMainWindow):
         # ZeroMQ connection (to server)
         self.zmq_manager = zmq_manager()
         self.zmq_manager.add_socket("TOADs", \
-                "tcp://localhost:"+ str(self.zmq_server_port_toads), self.toads_callback)
+                "tcp://" + self.server_ip + ":"+ \
+                str(self.zmq_server_port_toads), self.toads_callback)
         self.zmq_manager.add_socket("locations", \
-                "tcp://localhost:"+ str(self.zmq_server_port_positions), self.locations_callback)
+                "tcp://" + self.server_ip + ":"+ \
+                str(self.zmq_server_port_positions), self.locations_callback)
 
         # Qt Signals
         self.connect(self.update_timer, QtCore.SIGNAL("timeout()"), self.zmq_manager.poll_socket)
