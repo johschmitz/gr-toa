@@ -250,14 +250,14 @@ class gui(QtGui.QMainWindow):
                 lat = self.geo_coordinates_rx[rx_id][1]
                 x, y = self.basemap(lon, lat)
                 print("Sensor %i located at x=%.2f, y=%.2f" % (rx_id,x,y))
-                self.map_axes.scatter(x, y, linewidths=2,  marker="^", c="green", s=200, alpha=0.9, zorder=1)
+                self.map_axes.scatter(x, y, linewidths=2,  marker="^", c=(0.3, 0.9, 0.4), s=200, alpha=0.8, zorder=1)
                 plt.text(x, y, str(rx_id), color="black", fontsize=8,
                     horizontalalignment="center", verticalalignment="top",)
             # Plot beacon
             lon = self.geo_coordinates_beacon[0]
             lat = self.geo_coordinates_beacon[1]
             x_b, y_b = self.basemap(lon, lat)
-            self.map_axes.scatter(x_b, y_b, linewidths=2,  marker='^', c="orange", s=200, alpha=0.9, zorder=1)
+            self.map_axes.scatter(x_b, y_b, linewidths=2,  marker='^', c="orange", s=200, alpha=0.8, zorder=1)
             plt.text(x_b, y_b, "b", color="black", fontsize=8,
                 horizontalalignment="center", verticalalignment="top",)
             self.canvas.draw()
