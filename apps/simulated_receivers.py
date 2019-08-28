@@ -26,6 +26,7 @@ class toa_receivers_test():
         self.test_geo_coordinates_tags = cfg["test"]["test_geo_coordinates_tags"]
         self.test_tx_interval_seconds = cfg["test"]["test_tx_interval_seconds"]
         self.test_num_tx_intervals = cfg["test"]["test_num_tx_intervals"]
+        self.test_toa_noise_sigma = cfg["test"]["test_toa_noise_sigma"]
 
         # Get reference UTM grid
         lon_0, lat_0 = map_helpers.get_utm_lon_lat_0(self.bbox_map[0], self.bbox_map[1])
@@ -132,9 +133,8 @@ class toa_receivers_test():
             for rx_id in self.geo_coordinates_rx:
                 self.toas[tag_id][rx_id] = self.clocks[rx_id] \
                     + math.sqrt( (self.pos_tags[tag_id][0] - self.pos_rx[rx_id][0])**2 \
-                    + ( self.pos_tags[tag_id][1] - self.pos_rx[rx_id][1])**2 ) / self.const_c
-                toa_realtime = math.sqrt( (self.pos_tags[tag_id][0] - self.pos_rx[rx_id][0])**2 \
-                    + ( self.pos_tags[tag_id][1] - self.pos_rx[rx_id][1])**2 ) / self.const_c
+                    + ( self.pos_tags[tag_id][1] - self.pos_rx[rx_id][1])**2 ) / self.const_c \
+                    + np.random.normal(0,self.test_toa_noise_sigma)
         print("self.toas",self.toas)
 
 
