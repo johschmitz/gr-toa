@@ -122,8 +122,8 @@ class toa_receivers_test():
     def update_positions(self):
         for tag_id in self.tag_ids:
             if self.beacon_id != tag_id:
-                self.pos_tags[tag_id][0] += 10
-                self.pos_tags[tag_id][1] += 20
+                self.pos_tags[tag_id][0] += 2
+                self.pos_tags[tag_id][1] += 4
                 print("Tag position:", self.pos_tags[tag_id])
 
     def update_toas(self):
@@ -139,7 +139,7 @@ class toa_receivers_test():
 
 
 if __name__ == "__main__":
-    cfg = config_file_parser.parse_config_file("toa_config.ini")
+    cfg = config_file_parser.parse_config_file("toa_config_test.ini")
     receivers = toa_receivers_test(cfg)
     signal.signal(signal.SIGINT, receivers.sigint_handler)
     signal.pause()
