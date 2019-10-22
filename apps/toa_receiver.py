@@ -40,8 +40,9 @@ class top_block(gr.top_block):
         self.bp_cutoff_low = cfg["receiver"]["bp_cutoff_low"]
         self.bp_cutoff_high = cfg["receiver"]["bp_cutoff_high"]
         self.bp_transition_width = cfg["receiver"]["bp_transition_width"]
+        self.zmq_rx_data_port_base = cfg["receiver"]["zmq_rx_data_port_base"]
 
-        self.zmq_publisher_addr = "tcp://*:" + str(6000+args.id)
+        self.zmq_publisher_addr = "tcp://*:" + str(self.zmq_rx_data_port_base + args.id)
 
         ##################################################
         # Blocks
