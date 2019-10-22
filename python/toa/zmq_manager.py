@@ -21,8 +21,6 @@
 
 import zmq
 import threading
-import numpy
-import time
 
 
 class zmq_manager():
