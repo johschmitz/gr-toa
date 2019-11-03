@@ -36,6 +36,7 @@ GR_PYTHON_INSTALL(
         toa/gui_helpers.py
         toa/map_helpers.py
         toa/osm_tile_download.py
+        toa/receiver_helpers.py
         toa/zmq_manager.py
     DESTINATION
         ${GR_PYTHON_DIR}/toa
